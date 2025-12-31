@@ -1,0 +1,5 @@
+{
+  "name": "PartyHub",
+  "description": "A minimalist, mobile-first party game hub featuring Undercover, Werewolf, and a Card Game Rules library. Designed for pass-and-play usage.",
+  "requestFramePermissions": []
+}
