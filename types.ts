@@ -1,67 +1,23 @@
-export enum View {
-  HUB = 'HUB',
-  UNDERCOVER = 'UNDERCOVER',
-  WEREWOLF = 'WEREWOLF',
-  RULES = 'RULES',
-  PSYCHIATRIST = 'PSYCHIATRIST',
-  TWENTY_ONE = 'TWENTY_ONE',
-  PASSWORD = 'PASSWORD'
-}
 
-export interface Player {
-  id: string;
+export interface Currency {
+  code: string;
   name: string;
 }
 
-export interface UndercoverWordPair {
-  civilian: string;
-  undercover: string;
+export interface ExchangeRates {
+  amount: number;
+  base: string;
+  date: string;
+  rates: { [key: string]: number };
 }
 
-export enum WerewolfRole {
-  VILLAGER = 'Villageois',
-  WEREWOLF = 'Loup-Garou',
-  SEER = 'Voyante',
-  WITCH = 'Sorcière',
-  HUNTER = 'Chasseur',
-  CUPID = 'Cupidon'
-}
-
-export interface CardRuleSection {
-  title: string;
-  content: string;
-}
-
-export interface CardRule {
+export interface FavoritePair {
   id: string;
-  title: string;
-  sections: CardRuleSection[];
-  targetView?: View;
-  isDrinking?: boolean;
+  from: string;
+  to: string;
 }
 
-export type PsychiatristCategory = 'BEHAVIOR' | 'IDENTITY' | 'VERBAL';
-
-export interface PsychiatristRule {
-  id: string;
-  name: string;
-  description: string;
-  category: PsychiatristCategory;
-  hint: string;
-}
-
-export interface PsychiatristSubject {
-  name: string;
-  hint: string;
-}
-
-export interface PsychiatristSubjectList {
-  id: string;
-  label: string;
-  data: PsychiatristSubject[];
-}
-
-export interface PalmierRule {
-  cardValue: string;
-  rule: string;
+export interface CacheData {
+  rates: ExchangeRates;
+  timestamp: number;
 }
