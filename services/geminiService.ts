@@ -1,12 +1,7 @@
+import { GoogleGenAI, Type } from "@google/genai";
 import { UndercoverWordPair } from "../types";
 
-// --- CONFIGURATION ---
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-// On utilise le modèle validé par ton test (gemini-2.5-flash)
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
-// --- DONNÉES STATIQUES (FALLBACK & RÈGLES) ---
-
+// Fallback data in case API is not available or fails
 const FALLBACK_PAIRS: UndercoverWordPair[] = [
   { civilian: "Chien", undercover: "Loup" },
   { civilian: "Café", undercover: "Thé" },
@@ -43,95 +38,92 @@ const SUB_THEMES = [
   "Un instrument scientifique"
 ];
 
-// --- MOTEUR API (Architecture sans SDK) ---
+export const generateUndercoverWords = async (category: string): Promise<UndercoverWordPair> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const randomSubTheme = SUB_THEMES[Math.floor(Math.random() * SUB_THEMES.length)];
+  
+  let promptContext = "";
+  if (category === "Adultes (18+)") {
+    promptContext = `
+      THÈME OBLIGATOIRE : Sexe, Spicy, Hot, Coquin, Érotisme, Anatomie intime.
+      Tu DOIS générer des mots qui font référence explicitement à la sexualité, aux fantasmes, au corps nu ou à l'intimité.
+      INTERDICTIONS STRICTES : ABSOLUMENT AUCUN ALCOOL, pas de drogues.
+    `;
+  } else {
+    promptContext = `
+      Catégorie du jeu : ${category}.
+      POUR VARIER, APPLIQUE CE SOUS-CONTEXTE : "${randomSubTheme}".
+      Sois créatif, surprenant et difficile.
+    `;
+  }
 
-const callGeminiRaw = async (prompt: string) => {
-    if (!API_KEY) {
-        console.error("ERREUR CRITIQUE : Clé API manquante dans .env.local");
-        throw new Error("Clé API manquante");
-    }
+  const prompt = `
+    Agis comme un générateur de mots pour le jeu 'Undercover'.
+    LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
+    Tâche: Génère UNE paire de mots (Civilian vs Undercover).
+    Règles :
+    1. Les mots doivent être sémantiquement proches mais distincts.
+    2. ${promptContext}
+    3. LISTE NOIRE (Interdits): ${BANNED_WORDS.join(", ")}.
+  `;
 
-    const response = await fetch(`${BASE_URL}?key=${API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                // Force le modèle à renvoyer du JSON structurellement valide
-                response_mime_type: "application/json",
-                temperature: 1.0 
-            }
-        })
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            civilian: { type: Type.STRING, description: "Le mot pour les civils" },
+            undercover: { type: Type.STRING, description: "Le mot pour l'undercover" }
+          },
+          required: ["civilian", "undercover"]
+        }
+      }
     });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        console.error("ERREUR API GEMINI:", errorData);
-        throw new Error(`Erreur API: ${response.status}`);
+    if (response.text) {
+      return JSON.parse(response.text.trim()) as UndercoverWordPair;
     }
-
-    const data = await response.json();
-    // Extraction sécurisée du texte
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!rawText) throw new Error("Réponse vide de l'IA");
-
-    // Nettoyage des balises Markdown (```json ... ```) souvent ajoutées par l'IA
-    return rawText.replace(/```json|```/g, '').trim();
-};
-
-// --- FONCTIONS MÉTIER EXPORTÉES ---
-
-export const generateUndercoverWords = async (category: string): Promise<UndercoverWordPair> => {
-    const randomSubTheme = SUB_THEMES[Math.floor(Math.random() * SUB_THEMES.length)];
-    
-    let promptContext = "";
-    if (category === "Adultes (18+)") {
-      promptContext = `
-        THÈME OBLIGATOIRE : Sexe, Spicy, Hot, Coquin, Érotisme, Anatomie intime.
-        Tu DOIS générer des mots qui font référence explicitement à la sexualité, aux fantasmes, au corps nu ou à l'intimité.
-        INTERDICTIONS STRICTES : ABSOLUMENT AUCUN ALCOOL, pas de drogues.
-      `;
-    } else {
-      promptContext = `
-        Catégorie du jeu : ${category}.
-        POUR VARIER, APPLIQUE CE SOUS-CONTEXTE : "${randomSubTheme}".
-        Sois créatif, surprenant et difficile.
-      `;
-    }
-
-    const prompt = `
-      Agis comme un générateur de mots pour le jeu 'Undercover'.
-      LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
-      Tâche: Génère UNE paire de mots (Civilian vs Undercover).
-      Règles :
-      1. Les mots doivent être sémantiquement proches mais distincts.
-      2. ${promptContext}
-      3. LISTE NOIRE (Interdits): ${BANNED_WORDS.join(", ")}.
-      Format JSON attendu : { "civilian": "string", "undercover": "string" }
-    `;
-
-    try {
-        const jsonString = await callGeminiRaw(prompt);
-        return JSON.parse(jsonString);
-    } catch (error) {
-        console.warn("Passage en mode hors-ligne (Fallback) suite à une erreur:", error);
-        return FALLBACK_PAIRS[Math.floor(Math.random() * FALLBACK_PAIRS.length)];
-    }
+    throw new Error("Empty AI response");
+  } catch (error) {
+    console.warn("Fallback to static pairs due to error:", error);
+    return FALLBACK_PAIRS[Math.floor(Math.random() * FALLBACK_PAIRS.length)];
+  }
 };
 
 export const generatePasswordWords = async (category: string, count: number): Promise<string[]> => {
-    try {
-        const prompt = `
-            Agis comme un générateur "Mot de Passe". FRANÇAIS UNIQUEMENT.
-            CATÉGORIE : ${category}. QUANTITÉ : ${count} mots.
-            Format JSON attendu : ["mot1", "mot2", ...]
-        `;
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  try {
+    const prompt = `
+      Agis comme un générateur "Mot de Passe". 
+      LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
+      CATÉGORIE : ${category}. 
+      QUANTITÉ : ${count} mots.
+      Fournis une liste de mots variés, devinables mais intéressants.
+    `;
 
-        const jsonString = await callGeminiRaw(prompt);
-        return JSON.parse(jsonString) as string[];
-    } catch (error) {
-        console.error("Gemini Password Error", error);
-        return ["Erreur IA", "Mode hors-ligne"];
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING }
+        }
+      }
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text.trim()) as string[];
     }
+    return ["Erreur", "Réessaie"];
+  } catch (error) {
+    console.error("Gemini Password Error:", error);
+    return ["Mode", "Hors-ligne", "Erreur API"];
+  }
 };

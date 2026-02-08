@@ -12,37 +12,15 @@ const GAMES: CardRule[] = [
     id: 'palmier',
     title: 'Le Palmier',
     isDrinking: true,
+    targetView: View.PALMIER,
     sections: [
         {
             title: "But du jeu",
             content: "Ne pas faire tomber la bouteille et suivre les gages des cartes."
         },
         {
-            title: "Valeur des cartes",
-            content: `A : Dans les yeux (Distribue 1 gorgée)
-2 : Dans les yeux (Distribue 2 gorgées)
-3 : Dans les yeux (Distribue 3 gorgées)
-4 : Au sol (Dernier main au sol boit)
-5 : En l'air (Dernier main en l'air boit)
-6 : Dans ma valise (Jeu de mémoire)
-7 : Dans ma poche (J'ai déjà... / Never have I ever)
-8 : Thème (Le premier qui répète ou sèche boit)
-9 : Rime (Le premier qui répète ou sèche boit)
-10 : Freeze (Tu deviens maître du freeze, tu figes quand tu veux)
-V : Règle perso (Invente une règle)
-D : La Pute (Si on te répond, la personne boit. Valable jusqu'à ce qu'une autre Dame soit piochée.)
-R : Waterfall (Tout le monde boit à la suite)`
-        },
-        {
             title: "Installation",
-            content: "Placez une bouteille vide (le Palmier) au centre. Étalez les cartes en cercle autour de la bouteille, face cachée, de manière à ce qu'elles se touchent toutes (le cercle doit être fermé)."
-        },
-        {
-            title: "Déroulement",
-            content: `À son tour, un joueur pioche une carte du cercle, la montre, réalise le gage associé, puis la pose en équilibre au sommet de la bouteille (sur le goulot ou sur les autres cartes).
-
-- Si le cercle est rompu (les cartes au sol ne se touchent plus) : Le joueur boit.
-- Si le Palmier (cartes sur la bouteille) tombe : Le joueur boit CUL SEC.`
+            content: "Placez une bouteille vide (le Palmier) au centre. Étalez les cartes en cercle autour de la bouteille, face cachée."
         }
     ]
   },
@@ -50,36 +28,11 @@ R : Waterfall (Tout le monde boit à la suite)`
     id: 'dealer',
     title: 'Le Dealer',
     isDrinking: true,
+    targetView: View.DEALER,
     sections: [
         {
             title: "But du jeu",
             content: "Deviner ses cartes, bluffer sur la pyramide et mémoriser sa main."
-        },
-        {
-            title: "Phase 1 : La Distribution",
-            content: `Chaque joueur doit deviner successivement 4 attributs pour obtenir ses 4 cartes. À chaque erreur, le joueur boit.
-
-1. Couleur : Rouge ou Noir ?
-2. Valeur : Plus, Moins ou Égal à la première carte ?
-3. Position : Entre les deux premières ou à l'extérieur ?
-4. Famille : Cœur, Pique, Carreau ou Trèfle ?`
-        },
-        {
-            title: "Phase 2 : La Pyramide (Bluff)",
-            content: `Le dealer construit une pyramide face cachée et ajoute une carte au sommet. On retourne les cartes une par une.
-Si tu as la même valeur qu'une carte retournée, tu distribues des gorgées (selon l'étage).
-
-On peut mentir. Si quelqu'un dit "Menteur" :
-- Tu montres ta carte : Si tu as raison, il boit double.
-- Si tu as menti : Tu bois.`
-        },
-        {
-            title: "Phase 3 : Le Sommet (Mémoire)",
-            content: `Avant de retourner la carte ultime :
-Chaque joueur doit annoncer ses 4 cartes dans l'ordre exact, puis les retourner.
-Sanction : Chaque erreur = 1 gorgée.
-
-Pour finir, on retourne la dernière carte. Ceux qui ont la même valeur font un CUL SEC.`
         }
     ]
   },
@@ -113,11 +66,6 @@ Pour finir, on retourne la dernière carte. Ceux qui ont la même valeur font un
             content: `Le joueur qui a la main lance 1, 2, 3 ou 4 cartes de même valeur.
 Les suivants doivent surenchérir avec le même nombre de cartes d'une valeur supérieure ou passer.
 Si tout le monde passe, le dernier joueur ayant posé remporte la main et relance.`
-        },
-        {
-            title: "Coups Spéciaux",
-            content: `- Le 2 : Coupe le jeu immédiatement, on nettoie le tas et le joueur rejoue ce qu'il veut.
-- Le Carré : Poser 4 cartes identiques coupe le jeu immédiatement.`
         }
     ]
   },
@@ -157,51 +105,29 @@ As = 1
 Valet & Dame = 10`
         },
         {
-            title: "Mise en place",
-            content: "4 cartes face cachée devant chaque joueur, disposées en carré."
-        },
-        {
-            title: "Tour de jeu",
-            content: `À son tour, on pioche une carte (de la pioche ou de la défausse) puis on en jette une.
-
-- Combo : On peut jeter plusieurs cartes identiques d'un coup.
-- Interception : Si quelqu'un jette une carte (ex: 5) et que vous savez que vous avez un 5, jetez-le immédiatement (même si ce n'est pas votre tour).`
-        },
-        {
             title: "Pouvoirs",
             content: `S'activent uniquement si la carte est piochée puis jetée immédiatement :
 - Dame : Regarder l'une de vos propres cartes.
 - 10 : Regarder la carte d'un adversaire.
-- Valet : Échanger une de vos cartes avec un adversaire (sans la regarder).`
-        },
-        {
-            title: "Fin de manche (Annonce Deutch)",
-            content: `On annonce "Deutch" à la fin de son tour si on pense avoir le score le plus bas. Les autres jouent une dernière fois.
-
-- Réussite (Score strictement le plus bas) : 0 point.
-- Échec : Ses points + 25 de pénalité.`
+- Valet : Échanger une de vos cartes avec un adversaire.`
         }
     ]
   },
   {
     id: 'pouilleux',
-    title: 'Le Pouilleux (Mistigri)',
+    title: 'Le Pouilleux',
     sections: [
         {
             title: "But du jeu",
             content: "Ne pas finir avec le Valet de Pique (le Pouilleux) en main."
         },
         {
-            title: "Préparation",
-            content: "Retirez le Valet de Trèfle du paquet. Distribuez toutes les cartes. Les joueurs posent immédiatement toutes les paires qu'ils ont en main (ex: deux Rois, deux 7)."
-        },
-        {
             title: "Déroulement",
             content: `Le premier joueur tire une carte au hasard dans la main de son voisin de gauche.
-- Si cela forme une paire avec une de ses cartes : Il pose la paire.
+- Si cela forme une paire : Il pose la paire.
 - Sinon : Il garde la carte.
 
-Le jeu continue ainsi de suite jusqu'à ce que toutes les paires soient formées. Il ne restera qu'une seule carte : le Valet de Pique. Celui qui l'a perdu.`
+Le jeu continue jusqu'à ce qu'il ne reste que le Valet de Pique.`
         }
     ]
   }
