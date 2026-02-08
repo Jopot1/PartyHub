@@ -96,6 +96,7 @@ export const Werewolf: React.FC<WerewolfProps> = ({ players, setPlayers }) => {
   const [winner, setWinner] = useState<{ title: string; desc: string; icon: React.ReactNode } | null>(null);
   const [gameEnded, setGameEnded] = useState(false);
   const [selectedDeathIds, setSelectedDeathIds] = useState<string[]>([]);
+  const [infoRole, setInfoRole] = useState<WerewolfRole | null>(null);
 
   const [selectedRoles, setSelectedRoles] = useState<Record<WerewolfRole, number>>({
     [WerewolfRole.VILLAGER]: 0,
@@ -298,7 +299,8 @@ export const Werewolf: React.FC<WerewolfProps> = ({ players, setPlayers }) => {
     return (
         <div className="flex flex-col h-[calc(100vh-60px)] animate-fade-in pb-24">
             <div className="p-6 text-center">
-                <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter">Le Deck</h2>
+                <h2 className="text-3xl font-black mb-1 uppercase tracking-tighter text-slate-900 dark:text-white">Le Deck</h2>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Cliquez sur un rôle pour en savoir plus</p>
                 <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${totalSelected === players.length ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                     {totalSelected} / {players.length} rôles
                 </div>
@@ -307,10 +309,13 @@ export const Werewolf: React.FC<WerewolfProps> = ({ players, setPlayers }) => {
                 {(Object.keys(selectedRoles) as WerewolfRole[]).map(role => (
                     <div key={role} className="flex items-center gap-3">
                         <div className="flex-1 flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                            <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setInfoRole(role)}
+                                className="flex items-center gap-3 active:scale-95 transition-transform text-left"
+                            >
                                 <div className="bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">{getRoleIcon(role, 20)}</div>
                                 <span className="font-bold text-sm">{role}</span>
-                            </div>
+                            </button>
                             <div className="flex items-center gap-3">
                                 <button onClick={() => setSelectedRoles(p => ({...p, [role]: Math.max(0, p[role]-1)}))} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><Minus size={16}/></button>
                                 <span className="w-4 text-center font-black">{selectedRoles[role]}</span>
@@ -320,8 +325,30 @@ export const Werewolf: React.FC<WerewolfProps> = ({ players, setPlayers }) => {
                     </div>
                 ))}
             </div>
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-ios-bg to-transparent dark:from-ios-darkBg">
-                <Button fullWidth size="lg" onClick={confirmRoles} disabled={totalSelected !== players.length}>Distribuer</Button>
+
+            {/* Role Info Modal */}
+            {infoRole && (
+              <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setInfoRole(null)}>
+                <Card className="w-full max-w-sm p-8 text-center bg-white dark:bg-slate-900 rounded-3xl shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                        {getRoleIcon(infoRole, 40)}
+                    </div>
+                    <h3 className="text-2xl font-black uppercase mb-4">{infoRole}</h3>
+                    <div className="space-y-4 text-left">
+                        <div>
+                            <span className="text-[10px] font-black uppercase text-ios-blue tracking-widest block mb-1">Description</span>
+                            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{ROLE_DETAILS[infoRole].description}</p>
+                        </div>
+                    </div>
+                    <Button fullWidth className="mt-8" onClick={() => setInfoRole(null)}>Fermer</Button>
+                </Card>
+              </div>
+            )}
+
+            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg p-4 bg-gradient-to-t from-ios-bg via-ios-bg/95 to-transparent dark:from-ios-darkBg dark:via-ios-darkBg/95 flex z-40">
+                <Button fullWidth className="shadow-2xl py-4" onClick={confirmRoles} disabled={totalSelected !== players.length}>
+                    Distribuer
+                </Button>
             </div>
         </div>
     );
