@@ -5,9 +5,7 @@ export enum View {
   RULES = 'RULES',
   PSYCHIATRIST = 'PSYCHIATRIST',
   TWENTY_ONE = 'TWENTY_ONE',
-  PASSWORD = 'PASSWORD',
-  PALMIER = 'PALMIER',
-  DEALER = 'DEALER'
+  PASSWORD = 'PASSWORD'
 }
 
 export interface Player {
@@ -23,14 +21,10 @@ export interface UndercoverWordPair {
 export enum WerewolfRole {
   VILLAGER = 'Villageois',
   WEREWOLF = 'Loup-Garou',
-  WHITE_WEREWOLF = 'Loup Blanc',
   SEER = 'Voyante',
   WITCH = 'Sorcière',
   HUNTER = 'Chasseur',
-  GUARDIAN = 'Gardien',
-  LITTLE_GIRL = 'Petite Fille',
-  CUPID = 'Cupidon',
-  VILLAGE_IDIOT = 'Idiot du Village'
+  CUPID = 'Cupidon'
 }
 
 export interface CardRuleSection {
@@ -56,7 +50,6 @@ export interface PsychiatristRule {
   hint: string;
 }
 
-// Fix: Added missing PsychiatristSubject and PsychiatristSubjectList interfaces to resolve import error in psychiatristList.ts
 export interface PsychiatristSubject {
   name: string;
   hint: string;

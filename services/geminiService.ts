@@ -1,7 +1,8 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { UndercoverWordPair } from "../types";
 
-// Fallback data in case API is not available or fails
+// --- STATIC DATA (FALLBACK) ---
+
 const FALLBACK_PAIRS: UndercoverWordPair[] = [
   { civilian: "Chien", undercover: "Loup" },
   { civilian: "Café", undercover: "Thé" },
@@ -38,92 +39,78 @@ const SUB_THEMES = [
   "Un instrument scientifique"
 ];
 
+// --- GENERATION LOGIC ---
+
 export const generateUndercoverWords = async (category: string): Promise<UndercoverWordPair> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const randomSubTheme = SUB_THEMES[Math.floor(Math.random() * SUB_THEMES.length)];
-  
-  let promptContext = "";
-  if (category === "Adultes (18+)") {
-    promptContext = `
-      THÈME OBLIGATOIRE : Sexe, Spicy, Hot, Coquin, Érotisme, Anatomie intime.
-      Tu DOIS générer des mots qui font référence explicitement à la sexualité, aux fantasmes, au corps nu ou à l'intimité.
-      INTERDICTIONS STRICTES : ABSOLUMENT AUCUN ALCOOL, pas de drogues.
-    `;
-  } else {
-    promptContext = `
-      Catégorie du jeu : ${category}.
-      POUR VARIER, APPLIQUE CE SOUS-CONTEXTE : "${randomSubTheme}".
-      Sois créatif, surprenant et difficile.
-    `;
-  }
-
-  const prompt = `
-    Agis comme un générateur de mots pour le jeu 'Undercover'.
-    LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
-    Tâche: Génère UNE paire de mots (Civilian vs Undercover).
-    Règles :
-    1. Les mots doivent être sémantiquement proches mais distincts.
-    2. ${promptContext}
-    3. LISTE NOIRE (Interdits): ${BANNED_WORDS.join(", ")}.
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            civilian: { type: Type.STRING, description: "Le mot pour les civils" },
-            undercover: { type: Type.STRING, description: "Le mot pour l'undercover" }
-          },
-          required: ["civilian", "undercover"]
-        }
-      }
-    });
-
-    if (response.text) {
-      return JSON.parse(response.text.trim()) as UndercoverWordPair;
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const randomSubTheme = SUB_THEMES[Math.floor(Math.random() * SUB_THEMES.length)];
+    
+    let promptContext = "";
+    if (category === "Adultes (18+)") {
+      promptContext = `
+        THÈME OBLIGATOIRE : Sexe, Spicy, Hot, Coquin, Érotisme, Anatomie intime.
+        Tu DOIS générer des mots qui font référence explicitement à la sexualité, aux fantasmes, au corps nu ou à l'intimité.
+        INTERDICTIONS STRICTES : ABSOLUMENT AUCUN ALCOOL, pas de drogues.
+      `;
+    } else {
+      promptContext = `
+        Catégorie du jeu : ${category}.
+        POUR VARIER, APPLIQUE CE SOUS-CONTEXTE : "${randomSubTheme}".
+        Sois créatif, surprenant et difficile.
+      `;
     }
-    throw new Error("Empty AI response");
-  } catch (error) {
-    console.warn("Fallback to static pairs due to error:", error);
-    return FALLBACK_PAIRS[Math.floor(Math.random() * FALLBACK_PAIRS.length)];
-  }
+
+    const prompt = `
+      Agis comme un générateur de mots pour le jeu 'Undercover'.
+      LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
+      Tâche: Génère UNE paire de mots (Civilian vs Undercover).
+      Règles :
+      1. Les mots doivent être sémantiquement proches mais distincts.
+      2. ${promptContext}
+      3. LISTE NOIRE (Interdits): ${BANNED_WORDS.join(", ")}.
+      Format JSON attendu : { "civilian": "string", "undercover": "string" }
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json"
+            }
+        });
+        
+        const text = response.text;
+        if (!text) throw new Error("Réponse vide de l'IA");
+        return JSON.parse(text);
+    } catch (error) {
+        console.warn("Passage en mode hors-ligne (Fallback) suite à une erreur:", error);
+        return FALLBACK_PAIRS[Math.floor(Math.random() * FALLBACK_PAIRS.length)];
+    }
 };
 
 export const generatePasswordWords = async (category: string, count: number): Promise<string[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  try {
-    const prompt = `
-      Agis comme un générateur "Mot de Passe". 
-      LANGUE DE SORTIE : FRANÇAIS UNIQUEMENT.
-      CATÉGORIE : ${category}. 
-      QUANTITÉ : ${count} mots.
-      Fournis une liste de mots variés, devinables mais intéressants.
-    `;
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    try {
+        const prompt = `
+            Agis comme un générateur "Mot de Passe". FRANÇAIS UNIQUEMENT.
+            CATÉGORIE : ${category}. QUANTITÉ : ${count} mots.
+            Format JSON attendu : ["mot1", "mot2", ...]
+        `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: { type: Type.STRING }
-        }
-      }
-    });
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json"
+            }
+        });
 
-    if (response.text) {
-      return JSON.parse(response.text.trim()) as string[];
+        const text = response.text;
+        if (!text) throw new Error("Réponse vide de l'IA");
+        return JSON.parse(text) as string[];
+    } catch (error) {
+        console.error("Gemini Password Error", error);
+        return ["Erreur IA", "Mode hors-ligne"];
     }
-    return ["Erreur", "Réessaie"];
-  } catch (error) {
-    console.error("Gemini Password Error:", error);
-    return ["Mode", "Hors-ligne", "Erreur API"];
-  }
 };

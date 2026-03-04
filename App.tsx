@@ -7,8 +7,6 @@ import { CardRules } from './components/CardRules';
 import { Psychiatrist } from './components/Psychiatrist';
 import { TwentyOne } from './components/TwentyOne';
 import { Password } from './components/Password';
-import { Palmier } from './components/Palmier';
-import { Dealer } from './components/Dealer';
 import { ChevronLeft } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -16,6 +14,7 @@ const App: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
 
   const goBack = () => {
+    // Optional: Add confirmation dialog if game is in progress
     setCurrentView(View.HUB);
   };
 
@@ -27,8 +26,6 @@ const App: React.FC = () => {
           case View.RULES: return 'Règles';
           case View.TWENTY_ONE: return 'Le 21';
           case View.PASSWORD: return 'Mot de Passe';
-          case View.PALMIER: return 'Le Palmier';
-          case View.DEALER: return 'Le Dealer';
           default: return '';
       }
   };
@@ -78,14 +75,6 @@ const App: React.FC = () => {
 
         {currentView === View.PASSWORD && (
             <Password />
-        )}
-
-        {currentView === View.PALMIER && (
-            <Palmier />
-        )}
-
-        {currentView === View.DEALER && (
-            <Dealer />
         )}
       </main>
     </div>

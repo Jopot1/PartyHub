@@ -272,7 +272,7 @@ export const Password: React.FC = () => {
             {/* The Word */}
             <Card className="flex-1 flex flex-col items-center justify-center mb-6 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-2xl">
                 <span className="text-xs uppercase tracking-widest text-slate-400 mb-4">Faire deviner</span>
-                <h1 className="text-4xl md:text-6xl font-black text-center text-slate-900 dark:text-white leading-tight break-words px-4">
+                <h1 className="text-4xl font-black text-center text-slate-900 dark:text-white leading-tight break-words px-4">
                     {wordsQueue[currentWordIndex]}
                 </h1>
                 <div className="flex gap-1 mt-6">
